@@ -32,9 +32,10 @@ const AdminOrders = () => {
 
   // Memoize filtered orders and counts - only recalculate when dependencies change
   const { filteredOrders, pendingCount, processingCount, deliveredCount } = useMemo(() => {
-    const typedOrders = orders as AdminOrder[];
+    // Exclude unpaid orders from all admin views
+    const paidOrders = (orders as AdminOrder[]).filter(o => o.status !== "pending_payment");
 
-    const filtered = typedOrders.filter((order) => {
+    const filtered = paidOrders.filter((order) => {
       const matchesSearch =
         order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,9 +53,9 @@ const AdminOrders = () => {
       return matchesSearch && matchesStatus;
     });
 
-    const pending = typedOrders.filter((o) => o.status === "pending").length;
-    const processing = typedOrders.filter((o) => o.status === "ready" || o.status === "on_way").length;
-    const delivered = typedOrders.filter((o) => o.status === "delivered").length;
+    const pending = paidOrders.filter((o) => o.status === "pending").length;
+    const processing = paidOrders.filter((o) => o.status === "ready" || o.status === "on_way").length;
+    const delivered = paidOrders.filter((o) => o.status === "delivered").length;
 
     return {
       filteredOrders: filtered,

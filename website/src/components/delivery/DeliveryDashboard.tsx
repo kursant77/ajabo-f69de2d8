@@ -86,13 +86,14 @@ const DeliveryDashboard = () => {
     toast.info(soundEnabled ? "Ovoz o'chirildi" : "Ovoz yoqildi");
   };
 
-  // Stats
-  const pendingCount = orders.filter((o) => o.status === "pending").length;
-  const deliveredCount = orders.filter((o) => o.status === "delivered").length;
+  // Stats (Exclude unpaid orders)
+  const paidOrders = orders.filter((o) => o.status !== "pending_payment");
+  const pendingCount = paidOrders.filter((o) => o.status === "pending").length;
+  const deliveredCount = paidOrders.filter((o) => o.status === "delivered").length;
 
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
 
-  const filteredOrders = orders.filter((order) =>
+  const filteredOrders = paidOrders.filter((order) =>
     activeTab === "active" ? order.status !== "delivered" : order.status === "delivered"
   );
 
@@ -157,7 +158,7 @@ const DeliveryDashboard = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-card-foreground">
-                {orders.length}
+                {paidOrders.length}
               </p>
               <p className="text-sm text-muted-foreground">Jami buyurtmalar</p>
             </div>

@@ -4,7 +4,7 @@ export interface Order {
   quantity: number;
   customerName: string;
   phoneNumber: string;
-  status: "pending" | "ready" | "on_way" | "delivered";
+  status: "pending" | "ready" | "on_way" | "delivered" | "pending_payment";
   address: string;
   createdAt: string;
   totalPrice?: number;

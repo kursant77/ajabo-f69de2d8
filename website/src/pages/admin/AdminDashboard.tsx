@@ -28,8 +28,11 @@ const AdminDashboard = () => {
 
   // Memoize all calculations - only recalculate when orders change
   const { todayStats, graphData, topProductsList } = useMemo(() => {
+    // Exclude unpaid orders from all statistics
+    const paidOrders = orders.filter(o => o.status !== "pending_payment");
+
     // Calculate Today's Stats
-    const todayOrders = orders.filter((o) => isToday(o.rawCreatedAt));
+    const todayOrders = paidOrders.filter((o) => isToday(o.rawCreatedAt));
     const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
     const deliveredToday = todayOrders.filter((o) => o.status === "delivered").length;
     const pendingToday = todayOrders.filter((o) => o.status === "pending").length;
@@ -42,7 +45,7 @@ const AdminDashboard = () => {
     }).reverse();
 
     const weeklyData = last7Days.map((date) => {
-      const dayOrders = orders.filter(
+      const dayOrders = paidOrders.filter(
         (o) =>
           o.rawCreatedAt.getDate() === date.getDate() &&
           o.rawCreatedAt.getMonth() === date.getMonth() &&
@@ -56,7 +59,7 @@ const AdminDashboard = () => {
 
     // Calculate Top Products
     const productSales: Record<string, { quantity: number; revenue: number }> = {};
-    orders.forEach((o) => {
+    paidOrders.forEach((o) => {
       if (!productSales[o.productName]) {
         productSales[o.productName] = { quantity: 0, revenue: 0 };
       }
