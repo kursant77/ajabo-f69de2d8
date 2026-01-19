@@ -5,18 +5,28 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from bot import WEBSITE_URL
 
 
-def get_webapp_keyboard(telegram_user_id: int) -> InlineKeyboardMarkup:
+def get_webapp_keyboard(telegram_user_id: int, full_name: str = None, phone: str = None) -> InlineKeyboardMarkup:
     """
     Create an inline keyboard with Web App button.
     
     Args:
-        telegram_user_id: User's Telegram ID to pass to the website
+        telegram_user_id: User's Telegram ID
+        full_name: User's full name from profile
+        phone: User's phone number from profile
         
     Returns:
         InlineKeyboardMarkup with Web App button
     """
-    # Add telegram_user_id as URL parameter for the Web App
+    import urllib.parse
+    
+    # Base URL with telegram_user_id
     webapp_url = f"{WEBSITE_URL}?telegram_user_id={telegram_user_id}"
+    
+    # Add optional parameters
+    if full_name:
+        webapp_url += f"&full_name={urllib.parse.quote(full_name)}"
+    if phone:
+        webapp_url += f"&phone={urllib.parse.quote(phone)}"
     
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[

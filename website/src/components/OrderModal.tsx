@@ -9,6 +9,8 @@ interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (orderData: OrderData) => void;
+  prefilledName?: string;
+  prefilledPhone?: string;
 }
 
 export interface OrderData {
@@ -23,7 +25,7 @@ export interface OrderData {
   totalPrice: number;
 }
 
-const OrderModal = ({ item, isOpen, onClose, onConfirm }: OrderModalProps) => {
+const OrderModal = ({ item, isOpen, onClose, onConfirm, prefilledName, prefilledPhone }: OrderModalProps) => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -32,17 +34,17 @@ const OrderModal = ({ item, isOpen, onClose, onConfirm }: OrderModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState<"click" | "paynet" | "payme" | "uzum" | "cash">("cash");
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // Reset form when modal opens with new item
+  // Reset or pre-fill form when modal opens
   useEffect(() => {
     if (isOpen) {
-      setFullName("");
-      setPhoneNumber("");
+      setFullName(prefilledName || "");
+      setPhoneNumber(prefilledPhone || "");
       setQuantity(1);
       setAddress("");
       setLocation(undefined);
       setPaymentMethod("cash");
     }
-  }, [isOpen, item?.id]);
+  }, [isOpen, item?.id, prefilledName, prefilledPhone]);
 
   if (!isOpen || !item) return null;
 

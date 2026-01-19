@@ -19,15 +19,27 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const [telegramUserId, setTelegramUserId] = useState<number | null>(null);
+  const [prefilledName, setPrefilledName] = useState<string>("");
+  const [prefilledPhone, setPrefilledPhone] = useState<string>("");
 
   useEffect(() => {
     const userId = searchParams.get("telegram_user_id");
+    const fullName = searchParams.get("full_name");
+    const phone = searchParams.get("phone");
+
     if (userId) {
       const parsedId = parseInt(userId, 10);
       if (!isNaN(parsedId)) {
         setTelegramUserId(parsedId);
         console.log("Found Telegram User ID:", parsedId);
       }
+    }
+
+    if (fullName) {
+      setPrefilledName(decodeURIComponent(fullName));
+    }
+    if (phone) {
+      setPrefilledPhone(decodeURIComponent(phone));
     }
   }, [searchParams]);
 
@@ -122,6 +134,8 @@ const Index = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmOrder}
+        prefilledName={prefilledName}
+        prefilledPhone={prefilledPhone}
       />
 
       {/* Map Section */}

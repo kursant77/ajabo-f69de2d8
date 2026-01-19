@@ -120,25 +120,44 @@ export function useSupabaseOrders() {
 
             if (error) throw error;
 
-            // Notify Telegram bot if status changed and user has telegram ID
+            // Notify Telegram bot if status changed
             const updatedOrder = orders.find(o => o.id === orderId);
-            if (updatedOrder && updatedOrder.telegramUserId && updates.status && updates.status !== "pending_payment") {
-                // Map status to telegram bot expected status
-                let botStatus: any = updates.status;
-                if (updates.status === "on_way") botStatus = "delivering";
-                if (updates.status === "pending") botStatus = "confirmed";
+            if (updatedOrder && updates.status && updates.status !== "pending_payment") {
+                let telegramUserId = updatedOrder.telegramUserId;
 
-                await notifyTelegramBot({
-                    order_id: orderId,
-                    telegram_user_id: updatedOrder.telegramUserId,
-                    status: botStatus
-                });
+                // If missing telegramUserId, try to look it up by phone number in profiles
+                if (!telegramUserId && updatedOrder.phoneNumber) {
+                    console.log(`🔍 Looking up Telegram ID for phone: ${updatedOrder.phoneNumber}`);
+                    const { data: profileData } = await supabase
+                        .from("profiles")
+                        .select("telegram_id")
+                        .eq("phone", updatedOrder.phoneNumber)
+                        .single();
+
+                    if (profileData) {
+                        telegramUserId = profileData.telegram_id;
+                        console.log(`✅ Found Telegram ID: ${telegramUserId}`);
+                    }
+                }
+
+                if (telegramUserId) {
+                    // Map status to telegram bot expected status
+                    let botStatus: any = updates.status;
+                    if (updates.status === "on_way") botStatus = "delivering";
+                    if (updates.status === "pending") botStatus = "confirmed";
+
+                    await notifyTelegramBot({
+                        order_id: orderId,
+                        telegram_user_id: telegramUserId,
+                        status: botStatus
+                    });
+                }
             }
         } catch (error) {
             console.error("Error updating order:", error);
             toast.error("Buyurtmani yangilashda xatolik");
         }
-    }, []);
+    }, [orders]);
 
     const addOrder = useCallback(async (order: Omit<Order, "id">) => {
         try {

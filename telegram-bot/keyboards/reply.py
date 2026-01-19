@@ -21,3 +21,22 @@ def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     )
     
     return keyboard
+
+
+def get_contact_keyboard() -> ReplyKeyboardMarkup:
+    """
+    Create a keyboard that asks for the user's phone number.
+    
+    Returns:
+        ReplyKeyboardMarkup with the share contact button
+    """
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📱 Telefon raqamni yuborish", request_contact=True)]
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+        input_field_placeholder="Raqamingizni yuborish uchun pastdagi tugmani bosing"
+    )
+    
+    return keyboard
