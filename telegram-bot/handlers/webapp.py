@@ -40,7 +40,42 @@ async def handle_order_button(message: Message):
         "Pastdagi tugmani bosing va taomlarimizni ko'ring!"
     )
     
-    await message.answer(
-        text,
-        reply_markup=get_webapp_keyboard(telegram_id, full_name, phone)
-    )
+    logger.info(f"Generating webapp keyboard for user {telegram_id}")
+    
+    is_localhost = "localhost" in web_app_url or "127.0.0.1" in web_app_url
+    
+    if is_localhost:
+        logger.warning(f"Localhost detected in URL: {web_app_url}. Sending as text because Telegram buttons don't support localhost.")
+        # Generate the URL manually for text response
+        params = {
+            "telegram_user_id": telegram_id,
+        }
+        if full_name: params["full_name"] = full_name
+        if phone: params["phone"] = phone
+        
+        import urllib.parse
+        final_url = f"{web_app_url.split('?')[0]}?{urllib.parse.urlencode(params)}"
+        
+        await message.answer(
+            f"🛠 <b>Localhost testi aniqlandi</b>\n\n"
+            f"Telegram tugmalari <code>localhost</code> havolalarini qo'llab-quvvatlamaydi. "
+            f"Iltimos, saytni ochish uchun quyidagi havola ustiga bosing:\n\n"
+            f"🔗 <a href='{final_url}'>{final_url}</a>\n\n"
+            f"<i>Eslatma: Haqiqiy foydalanishda (HTTPS bilan) bu tugma ko'rinishida bo'ladi.</i>"
+        )
+        return
+
+    keyboard = get_webapp_keyboard(telegram_id, full_name, phone)
+    
+    logger.info(f"Keyboard generated. Sending response to user {telegram_id}...")
+    try:
+        await message.answer(
+            text,
+            reply_markup=keyboard
+        )
+        logger.info(f"Response sent successfully to user {telegram_id}")
+    except Exception as e:
+        logger.error(f"Failed to send webapp keyboard to {telegram_id}: {e}")
+        await message.answer(
+            f"❌ Tugma yuborishda xatolik yuz berdi. Iltimos, ushbu havoladan foydalaning:\n\n{web_app_url}"
+        )

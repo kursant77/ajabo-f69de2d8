@@ -24,6 +24,7 @@ async def on_startup():
 async def on_shutdown():
     """Execute on bot shutdown."""
     logger.info("Bot is shutting down...")
+    await supabase.aclose()
     await bot.session.close()
     logger.info("Bot shut down successfully!")
 

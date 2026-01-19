@@ -30,18 +30,39 @@ if not SUPABASE_URL or not SUPABASE_URL.startswith("http"):
     logger.error(f"Invalid Supabase URL: {SUPABASE_URL}")
     raise ValueError("Valid Supabase URL is required")
 
-# Initialize PostgREST client as a replacement for Supabase client
-logger.info(f"Initializing AsyncPostgrestClient with URL: {SUPABASE_URL}")
-supabase = AsyncPostgrestClient(
-    f"{SUPABASE_URL}/rest/v1",
-    headers={
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}"
-    }
-)
-# Add compatibility alias for supabase.table() used in handlers
-supabase.table = supabase.from_
-logger.info("Supabase client initialized")
+# Proxy class for lazy initialization of Supabase client
+class SupabaseProxy:
+    def __init__(self):
+        self._instance = None
+
+    def _get_instance(self):
+        if self._instance is None:
+            logger.info(f"Lazily initializing AsyncPostgrestClient with URL: {SUPABASE_URL}")
+            self._instance = AsyncPostgrestClient(
+                f"{SUPABASE_URL}/rest/v1",
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}"
+                }
+            )
+            # Add compatibility alias
+            self._instance.table = self._instance.from_
+        return self._instance
+
+    def table(self, table_name):
+        return self._get_instance().table(table_name)
+    
+    def from_(self, table_name):
+        return self._get_instance().from_(table_name)
+
+    async def aclose(self):
+        if self._instance:
+            await self._instance.aclose()
+            self._instance = None
+
+# Initialize the proxy
+supabase = SupabaseProxy()
+logger.info("Supabase proxy initialized (lazy load enabled)")
 
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:3000")
 API_SECRET_KEY = os.getenv("API_SECRET_KEY")
