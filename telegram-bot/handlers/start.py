@@ -105,9 +105,9 @@ async def handle_name(message: Message, state: FSMContext):
             "username": message.from_user.username
         }
         
-        logger.info(f"Inserting profile for user {telegram_id}")
-        await supabase.table("profiles").insert(profile_data).execute()
-        logger.info(f"Profile inserted successfully for {telegram_id}")
+        logger.info(f"Upserting profile for user {telegram_id}")
+        await supabase.table("profiles").upsert(profile_data).execute()
+        logger.info(f"Profile upserted successfully for {telegram_id}")
         
         # Generate Web App URL for the new user
         params = {

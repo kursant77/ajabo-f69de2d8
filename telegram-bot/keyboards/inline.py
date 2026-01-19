@@ -28,15 +28,21 @@ def get_webapp_keyboard(telegram_user_id: int, full_name: str = None, phone: str
     if phone:
         webapp_url += f"&phone={urllib.parse.quote(phone)}"
     
+    # Telegram Web Apps REQUIRE HTTPS.
+    if webapp_url.startswith("https:"):
+        button = InlineKeyboardButton(
+            text="🍔 Buyurtma berish",
+            web_app=WebAppInfo(url=webapp_url)
+        )
+    else:
+        # Fallback to browser link for HTTP (localhost)
+        button = InlineKeyboardButton(
+            text="🍔 Buyurtma berish (Browserda)",
+            url=webapp_url
+        )
+
     keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="🍔 Buyurtma berish",
-                    web_app=WebAppInfo(url=webapp_url)
-                )
-            ]
-        ]
+        inline_keyboard=[[button]]
     )
     
     return keyboard
