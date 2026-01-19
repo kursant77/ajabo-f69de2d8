@@ -122,7 +122,7 @@ export function useSupabaseOrders() {
 
             // Notify Telegram bot if status changed and user has telegram ID
             const updatedOrder = orders.find(o => o.id === orderId);
-            if (updatedOrder && updatedOrder.telegramUserId && updates.status) {
+            if (updatedOrder && updatedOrder.telegramUserId && updates.status && updates.status !== "pending_payment") {
                 // Map status to telegram bot expected status
                 let botStatus: any = updates.status;
                 if (updates.status === "on_way") botStatus = "delivering";
@@ -157,14 +157,16 @@ export function useSupabaseOrders() {
             const { data, error } = await supabase.from("orders").insert(dbOrder).select().single();
             if (error) throw error;
 
-            // Notify Telegram bot for new order
-            if (data && data.telegram_user_id) {
+            // Notify Telegram bot for new order (ONLY IF NOT WAITING FOR PAYMENT)
+            if (data && data.telegram_user_id && data.status !== "pending_payment") {
                 await notifyTelegramBot({
                     order_id: data.id,
                     telegram_user_id: data.telegram_user_id,
                     status: "confirmed"
                 });
             }
+
+            return data?.id;
         } catch (error) {
             console.error("Error adding order:", error);
             toast.error("Buyurtma qo'shishda xatolik");

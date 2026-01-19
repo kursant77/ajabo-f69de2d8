@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import MapSection from "@/components/MapSection";
 import type { Category, MenuItem } from "@/data/menuData";
 import { useSupabaseOrders } from "@/hooks/useSupabaseOrders";
+import { generatePaymentUrl, isOnlinePayment } from "@/services/paymentService";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -47,31 +48,58 @@ const Index = () => {
     setIsModalOpen(false);
     setSelectedItem(null);
 
-    // Add order to database
-    console.log('Index - Order data being sent:', {
-      productName: orderData.productName,
-      quantity: orderData.quantity,
-      totalPrice: orderData.totalPrice,
-      productPrice: orderData.productPrice,
-    });
+    const isOnline = isOnlinePayment(orderData.paymentMethod as any);
+    const initialStatus = isOnline ? "pending_payment" : "pending";
 
-    await addOrder({
+    // Add order to database
+    const orderId = await addOrder({
       productName: orderData.productName,
       quantity: orderData.quantity,
       customerName: orderData.fullName,
       phoneNumber: orderData.phoneNumber,
-      address: orderData.address || "Manzil ko'rsatilmagan", // Using address from modal
-      status: "pending",
+      address: orderData.address || "Manzil ko'rsatilmagan",
+      status: initialStatus as any,
       createdAt: new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
       totalPrice: orderData.totalPrice,
       telegramUserId: telegramUserId,
     } as any);
 
-    // Show success toast
-    toast.success("Buyurtmangiz qabul qilindi!", {
-      description: `${orderData.productName} x${orderData.quantity} - ${new Intl.NumberFormat("uz-UZ").format(orderData.totalPrice)} so'm`,
-      duration: 4000,
-    });
+    // Filter out undefined if addOrder returns void
+    const finalOrderId = orderId || "NEW";
+
+    if (isOnline) {
+      toast.info("To'lov kutilmoqda...", {
+        description: "To'lov amalga oshirilgandan so'ng buyurtmangiz tasdiqlanadi.",
+        duration: 4000,
+      });
+    } else {
+      // Show success toast for cash
+      toast.success("Buyurtmangiz qabul qilindi!", {
+        description: `${orderData.productName} x${orderData.quantity} - ${new Intl.NumberFormat("uz-UZ").format(orderData.totalPrice)} so'm`,
+        duration: 4000,
+      });
+    }
+
+    // Handle online payment redirection
+    if (isOnline) {
+      const paymentUrl = generatePaymentUrl(orderData.paymentMethod as any, {
+        orderId: finalOrderId.toString(),
+        amount: orderData.totalPrice,
+        productName: orderData.productName,
+        phoneNumber: orderData.phoneNumber
+      });
+
+      if (paymentUrl) {
+        toast.info("To'lov sahifasiga yo'naltirilmoqda...", { duration: 2000 });
+
+        setTimeout(() => {
+          // PRODUCTION READY: Real redirection enabled!
+          window.location.href = paymentUrl;
+
+          console.log(`Redirection to: ${paymentUrl}`);
+        }, 1500);
+      }
+    }
   };
 
   return (

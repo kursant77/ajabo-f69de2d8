@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, MapPin } from "lucide-react";
 import type { MenuItem } from "@/data/menuData";
 import { toast } from "sonner";
+import { CashLogo, ClickLogo, PaymeLogo, PaynetLogo, UzumLogo } from "./payment/PaymentLogos";
 
 interface OrderModalProps {
   item: MenuItem | null;
@@ -18,7 +19,7 @@ export interface OrderData {
   quantity: number;
   address: string;
   location?: { lat: number; lng: number };
-  paymentMethod: "click" | "paynet" | "payme" | "cash";
+  paymentMethod: "click" | "paynet" | "payme" | "uzum" | "cash";
   totalPrice: number;
 }
 
@@ -28,7 +29,7 @@ const OrderModal = ({ item, isOpen, onClose, onConfirm }: OrderModalProps) => {
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState<{ lat: number; lng: number } | undefined>();
-  const [paymentMethod, setPaymentMethod] = useState<"click" | "paynet" | "payme" | "cash">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"click" | "paynet" | "payme" | "uzum" | "cash">("cash");
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   // Reset form when modal opens with new item
@@ -105,10 +106,11 @@ const OrderModal = ({ item, isOpen, onClose, onConfirm }: OrderModalProps) => {
   };
 
   const paymentMethods = [
-    { id: "cash", label: "Naqd", icon: "💵" },
-    { id: "click", label: "Click", icon: "💳" },
-    { id: "payme", label: "Payme", icon: "📱" },
-    { id: "paynet", label: "Paynet", icon: "🏦" },
+    { id: "cash", label: "Naqd", icon: <CashLogo className="h-4 w-auto" /> },
+    { id: "click", label: "Click", icon: <ClickLogo className="h-4 w-auto" /> },
+    { id: "payme", label: "Payme", icon: <PaymeLogo className="h-4 w-auto" /> },
+    { id: "uzum", label: "Uzum Bank", icon: <UzumLogo className="h-4 w-auto" /> },
+    { id: "paynet", label: "Paynet", icon: <PaynetLogo className="h-4 w-auto" /> },
   ];
 
   return (
@@ -144,7 +146,7 @@ const OrderModal = ({ item, isOpen, onClose, onConfirm }: OrderModalProps) => {
         <div className="mb-6 rounded-lg bg-secondary p-4">
           <div className="flex items-center justify-between">
             <span className="font-medium text-foreground">{item.name}</span>
-            <span className="text-sm font-semibold text-accent">
+            <span className="text-sm font-semibold text-accent flex items-center gap-1">
               {formatPrice(item.price)}
             </span>
           </div>
@@ -259,18 +261,20 @@ const OrderModal = ({ item, isOpen, onClose, onConfirm }: OrderModalProps) => {
             <label className="mb-2 block text-sm font-medium text-foreground">
               To'lov usuli <span className="text-destructive">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {paymentMethods.map((method) => (
                 <button
                   key={method.id}
                   type="button"
                   onClick={() => setPaymentMethod(method.id as any)}
-                  className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${paymentMethod === method.id
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-input bg-background text-foreground hover:bg-muted"
+                  className={`flex flex-col items-center justify-center gap-2 rounded-lg border p-3 text-xs font-semibold transition-all duration-300 ${paymentMethod === method.id
+                    ? "border-primary bg-primary/5 text-primary shadow-sm"
+                    : "border-input bg-background text-foreground hover:bg-secondary/50"
                     }`}
                 >
-                  <span className="text-lg">{method.icon}</span>
+                  <div className="h-5 flex items-center justify-center">
+                    {method.icon}
+                  </div>
                   {method.label}
                 </button>
               ))}
