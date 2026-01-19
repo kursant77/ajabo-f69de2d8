@@ -22,9 +22,8 @@ SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("VITE_SUPABASE_ANON_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    # Final fallback for backward compatibility
-    if not SUPABASE_URL: SUPABASE_URL = os.getenv("BACKEND_API_URL")
-    if not SUPABASE_KEY: SUPABASE_KEY = os.getenv("API_SECRET_KEY")
+    logger.error("SUPABASE_URL or SUPABASE_KEY not found in environment variables!")
+    raise ValueError("Supabase configuration is required")
 
 if not SUPABASE_URL or not SUPABASE_URL.startswith("http"):
     logger.error(f"Invalid Supabase URL: {SUPABASE_URL}")
@@ -64,7 +63,6 @@ class SupabaseProxy:
 supabase = SupabaseProxy()
 logger.info("Supabase proxy initialized (lazy load enabled)")
 
-BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:3000")
 API_SECRET_KEY = os.getenv("API_SECRET_KEY")
 if not API_SECRET_KEY:
     logger.error("API_SECRET_KEY not found in environment variables!")
@@ -85,6 +83,5 @@ bot = Bot(
 dp = Dispatcher()
 
 logger.info("Bot initialized successfully")
-logger.info(f"Backend API URL: {BACKEND_API_URL}")
 logger.info(f"Website URL: {WEBSITE_URL}")
 logger.info(f"Webhook will run on {WEBHOOK_HOST}:{WEBHOOK_PORT}")
