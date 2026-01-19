@@ -16,12 +16,14 @@ def get_main_menu_keyboard(web_app_url: str = None) -> ReplyKeyboardMarkup:
     """
     buttons = []
     if web_app_url:
-        # Telegram Web Apps REQUIRE HTTPS and PUBLIC domains. 
-        # localhost/127.0.0.1 won't work in buttons.
-        if web_app_url.startswith("https:") and "localhost" not in web_app_url and "127.0.0.1" not in web_app_url:
+        # We try to use WebAppInfo if it's HTTPS. 
+        # For HTTP/localhost, it might fail in some Telegram clients, 
+        # so we keep the text handler as a fallback.
+        if web_app_url.startswith("https:"):
             buttons.append([KeyboardButton(text="🍔 Buyurtma berish", web_app=WebAppInfo(url=web_app_url))])
         else:
-            # Fallback for HTTP or localhost (testing)
+            # For localhost/HTTP, we still try to send it as a WebApp button, 
+            # but the user can also click the text message that will be sent by the handler.
             buttons.append([KeyboardButton(text="🍔 Buyurtma berish")])
     else:
         buttons.append([KeyboardButton(text="🍔 Buyurtma berish")])

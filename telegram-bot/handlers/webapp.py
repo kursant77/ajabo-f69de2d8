@@ -3,7 +3,7 @@ Handler for Web App button and interactions.
 """
 from aiogram import Router, F
 from aiogram.types import Message
-from bot import supabase, logger
+from bot import supabase, logger, WEBSITE_URL
 from keyboards.inline import get_webapp_keyboard
 from utils.logger import logger
 
@@ -42,10 +42,10 @@ async def handle_order_button(message: Message):
     
     logger.info(f"Generating webapp keyboard for user {telegram_id}")
     
-    is_localhost = "localhost" in web_app_url or "127.0.0.1" in web_app_url
+    is_localhost = "localhost" in WEBSITE_URL or "127.0.0.1" in WEBSITE_URL
     
     if is_localhost:
-        logger.warning(f"Localhost detected in URL: {web_app_url}. Sending as text because Telegram buttons don't support localhost.")
+        logger.warning(f"Localhost detected in URL: {WEBSITE_URL}. Sending as text because Telegram buttons don't support localhost.")
         # Generate the URL manually for text response
         params = {
             "telegram_user_id": telegram_id,
@@ -54,7 +54,7 @@ async def handle_order_button(message: Message):
         if phone: params["phone"] = phone
         
         import urllib.parse
-        final_url = f"{web_app_url.split('?')[0]}?{urllib.parse.urlencode(params)}"
+        final_url = f"{WEBSITE_URL.split('?')[0]}?{urllib.parse.urlencode(params)}"
         
         await message.answer(
             f"🛠 <b>Localhost testi aniqlandi</b>\n\n"
@@ -77,5 +77,5 @@ async def handle_order_button(message: Message):
     except Exception as e:
         logger.error(f"Failed to send webapp keyboard to {telegram_id}: {e}")
         await message.answer(
-            f"❌ Tugma yuborishda xatolik yuz berdi. Iltimos, ushbu havoladan foydalaning:\n\n{web_app_url}"
+            f"❌ Tugma yuborishda xatolik yuz berdi. Iltimos, ushbu havoladan foydalaning:\n\n{WEBSITE_URL}"
         )
