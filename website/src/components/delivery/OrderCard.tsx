@@ -1,4 +1,4 @@
-import { Phone, MapPin, Clock, Check, Truck } from "lucide-react";
+import { Phone, MapPin, Clock, Check, Truck, ExternalLink } from "lucide-react";
 import type { Order } from "@/data/deliveryData";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,17 @@ interface OrderCardProps {
 
 const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
   const isDelivered = order.status === "delivered";
+
+  const getGoogleMapsUrl = (address: string) => {
+    // Try to extract coordinates from string like "Lat: 41.123, Lng: 60.123"
+    const coordRegex = /Lat:\s*([0-9.-]+),\s*Lng:\s*([0-9.-]+)/i;
+    const match = address.match(coordRegex);
+    if (match) {
+      return `https://www.google.com/maps/search/?api=1&query=${match[1]},${match[2]}`;
+    }
+    // Fallback to text search
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  };
 
   const getStatusBadge = () => {
     switch (order.status) {
@@ -110,9 +121,20 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
             {order.phoneNumber}
           </a>
         </div>
-        <div className="flex items-start gap-2 text-muted-foreground">
-          <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
-          <span>{order.address}</span>
+        <div className="flex items-start justify-between gap-2 text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span className="line-clamp-2">{order.address}</span>
+          </div>
+          <a
+            href={getGoogleMapsUrl(order.address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-7 items-center gap-1 rounded bg-secondary px-2 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10"
+          >
+            <ExternalLink className="h-3 w-3" />
+            Xarita
+          </a>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Clock className="h-4 w-4" />

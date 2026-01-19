@@ -2,6 +2,7 @@
 FastAPI webhook server for receiving order updates from backend.
 """
 from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
@@ -12,6 +13,15 @@ from utils.logger import logger
 
 # Create FastAPI app
 app = FastAPI(title="Telegram Bot Webhook")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For production, you might want to restrict this to WEBSITE_URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class OrderUpdate(BaseModel):

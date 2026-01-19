@@ -145,7 +145,9 @@ export function useSupabaseOrders() {
                     let botStatus: any = updates.status;
                     if (updates.status === "on_way") botStatus = "delivering";
                     if (updates.status === "pending") botStatus = "confirmed";
+                    // 'ready' and 'delivered' are already correct
 
+                    console.log(`Sending status update to bot: ${botStatus} for user ${telegramUserId}`);
                     await notifyTelegramBot({
                         order_id: orderId,
                         telegram_user_id: telegramUserId,
