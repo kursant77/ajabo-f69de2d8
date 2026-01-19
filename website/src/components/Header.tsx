@@ -2,34 +2,34 @@ import { Coffee } from "lucide-react";
 
 const Header = () => {
   return (
-    <header className="relative overflow-hidden bg-gradient-to-b from-primary to-primary/90 py-16 md:py-24">
-      {/* Decorative background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-accent" />
-        <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-cafe-warm" />
+    <header className="relative overflow-hidden bg-gradient-to-br from-[#F89800] via-[#FFB74D] to-[#F89800] py-20 md:py-32">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl animate-pulse" />
+        <div className="absolute -right-24 -bottom-24 h-96 w-96 rounded-full bg-red-600/10 blur-3xl animate-pulse" />
       </div>
 
       <div className="container relative z-10 mx-auto px-4 text-center">
-        {/* Logo/Icon */}
-        <div className="mb-6 inline-flex items-center justify-center rounded-full bg-primary-foreground/10 p-4 backdrop-blur-sm">
-          <Coffee className="h-12 w-12 text-primary-foreground md:h-16 md:w-16" />
+        {/* Main Branding */}
+        <div className="mb-8 flex flex-col items-center justify-center animate-fade-in-up">
+          <div className="mb-6 p-5 rounded-3xl bg-white/20 backdrop-blur-md border border-white/30 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
+            <Coffee className="h-16 w-16 text-white md:h-20 md:w-20 drop-shadow-lg" />
+          </div>
+
+          <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter drop-shadow-2xl italic">
+            AJABO
+          </h1>
+          <div className="mt-2 h-2 w-24 bg-red-600 rounded-full shadow-lg" />
         </div>
 
-        {/* Cafe Name */}
-        <h1 className="mb-4 font-display text-5xl font-bold tracking-tight text-primary-foreground md:text-7xl">
-          Ajabo
-        </h1>
-
         {/* Tagline */}
-        <p className="mx-auto max-w-md text-lg text-primary-foreground/80 md:text-xl">
-          Eng yaxshi qahva va shirinliklar uchun joy
+        <p className="mx-auto max-w-lg text-xl md:text-2xl text-white font-bold drop-shadow-md">
+          Mazzali va sifatli taomlar maskani 🍔✨
         </p>
 
-        {/* Decorative line */}
-        <div className="mx-auto mt-8 flex items-center justify-center gap-4">
-          <div className="h-px w-16 bg-primary-foreground/30" />
-          <div className="h-2 w-2 rounded-full bg-accent" />
-          <div className="h-px w-16 bg-primary-foreground/30" />
+        {/* Scrolling indicator or decorative dot */}
+        <div className="mt-12 animate-bounce">
+          <div className="mx-auto h-1.5 w-1.5 rounded-full bg-white" />
         </div>
       </div>
     </header>

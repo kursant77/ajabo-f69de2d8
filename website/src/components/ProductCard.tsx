@@ -1,3 +1,4 @@
+import { ShoppingCart } from "lucide-react";
 import type { MenuItem } from "@/data/menuData";
 
 interface ProductCardProps {
@@ -7,40 +8,40 @@ interface ProductCardProps {
 
 const ProductCard = ({ item, onOrder }: ProductCardProps) => {
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat("uz-UZ").format(price) + " so'm";
+        return new Intl.NumberFormat("uz-UZ").format(price);
     };
 
     return (
-        <article className="group overflow-hidden rounded-lg bg-card shadow-cafe transition-all duration-300 hover:-translate-y-1 hover:shadow-cafe-lg">
-            {/* Image */}
-            <div className="relative aspect-[4/3] overflow-hidden">
+        <article className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border border-gray-100">
+            {/* Image container with zoom effect */}
+            <div className="relative aspect-square overflow-hidden">
                 <img
                     src={item.image}
                     alt={item.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                 />
-                {/* Price badge */}
-                <div className="absolute right-3 top-3 rounded-full bg-primary/90 px-3 py-1.5 text-sm font-semibold text-primary-foreground backdrop-blur-sm">
-                    {formatPrice(item.price)}
-                </div>
             </div>
 
-            {/* Content */}
-            <div className="p-4 md:p-5">
-                <h3 className="mb-2 text-lg font-semibold text-card-foreground md:text-xl">
+            {/* Content area */}
+            <div className="flex flex-col flex-grow p-5 text-center">
+                <h3 className="text-xl font-bold text-[#E21A1A] mb-3 line-clamp-1">
                     {item.name}
                 </h3>
-                <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
-                    {item.description}
-                </p>
 
-                {/* Order button */}
+                <div className="flex items-center justify-center gap-1.5 mb-6">
+                    <span className="text-lg font-extrabold text-[#2D2D2D]">
+                        ✨ {formatPrice(item.price)} so'm
+                    </span>
+                </div>
+
+                {/* Shopping cart button */}
                 <button
                     onClick={() => onOrder(item)}
-                    className="w-full rounded-lg bg-accent py-2.5 text-sm font-medium text-accent-foreground transition-all duration-300 hover:bg-accent/90 hover:shadow-md active:scale-[0.98] md:py-3 md:text-base"
+                    className="mt-auto flex items-center justify-center gap-2 w-full bg-[#E21A1A] hover:bg-[#c41616] text-white py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-red-100 hover:shadow-red-200 active:scale-95"
                 >
-                    Buyurtma qilish
+                    <ShoppingCart className="w-5 h-5" />
+                    <span>Savatga qo'shish</span>
                 </button>
             </div>
         </article>

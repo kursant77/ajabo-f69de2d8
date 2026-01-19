@@ -19,46 +19,46 @@ const Footer = () => {
           {/* Address */}
           <div>
             <h3 className="mb-4 flex items-center gap-2 font-semibold">
-              <MapPin className="h-5 w-5 text-accent" />
+              <MapPin className="h-5 w-5 text-[#F89800]" />
               Manzil
             </h3>
             <p className="text-sm text-primary-foreground/70">
-              Toshkent shahar, Chilonzor tumani,
+              Xorazm viloyati, Shovot tumani,
               <br />
-              Bunyodkor ko'chasi, 15-uy
+              Kinoteatr binosi
             </p>
           </div>
 
           {/* Contact & Hours */}
           <div>
             <h3 className="mb-4 flex items-center gap-2 font-semibold">
-              <Clock className="h-5 w-5 text-accent" />
+              <Clock className="h-5 w-5 text-[#F89800]" />
               Ish vaqti
             </h3>
             <p className="mb-4 text-sm text-primary-foreground/70">
-              Har kuni: 09:00 - 22:00
+              Har kuni: 09:00 - 23:00
             </p>
 
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-accent" />
+              <Phone className="h-4 w-4 text-[#F89800]" />
               <a
                 href="tel:+998901234567"
                 className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
               >
-                +998 90 123 45 67
+                +998 90 600 00 00
               </a>
             </div>
           </div>
 
           {/* Social Links */}
           <div>
-            <h3 className="mb-4 font-semibold">Ijtimoiy tarmoqlar</h3>
+            <h3 className="mb-4 font-semibold text-white">Ijtimoiy tarmoqlar</h3>
             <div className="flex gap-3">
               <a
                 href="https://instagram.com/ajabocafe"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10 transition-all hover:bg-accent hover:text-accent-foreground"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-all hover:bg-[#F89800] hover:text-white"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
@@ -67,7 +67,7 @@ const Footer = () => {
                 href="https://t.me/ajabocafe"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10 transition-all hover:bg-accent hover:text-accent-foreground"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-all hover:bg-[#F89800] hover:text-white"
                 aria-label="Telegram"
               >
                 <Send className="h-5 w-5" />
@@ -77,9 +77,12 @@ const Footer = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 border-t border-primary-foreground/10 pt-6 text-center">
-          <p className="text-sm text-primary-foreground/50">
+        <div className="mt-10 border-t border-white/10 pt-6 text-center">
+          <p className="text-sm text-white/50">
             © 2024 Ajabo Cafe. Barcha huquqlar himoyalangan.
+          </p>
+          <p className="mt-2 text-xs text-white/30 font-bold uppercase tracking-widest">
+            Developed by Tricorp Group
           </p>
         </div>
       </div>

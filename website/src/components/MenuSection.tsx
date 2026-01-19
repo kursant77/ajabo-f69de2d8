@@ -1,5 +1,5 @@
 import { type Category, type MenuItem } from "@/data/menuData";
-import ProductCard from "./ProductCard";
+import ProductCard from "@/components/ProductCard";
 import { useSupabaseProducts } from "@/hooks/useSupabaseProducts";
 
 interface MenuSectionProps {
@@ -26,12 +26,12 @@ const MenuSection = ({ activeCategory, onOrder }: MenuSectionProps) => {
     <section className="py-8 md:py-12">
       <div className="container mx-auto px-4">
         {/* Section header */}
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-semibold text-foreground md:text-3xl">
+        <div className="mb-10 text-center animate-fade-in-up">
+          <h2 className="text-4xl font-extrabold text-[#2D2D2D] md:text-5xl tracking-tight">
             Bizning menyu
           </h2>
-          <p className="mt-2 text-muted-foreground">
-            Eng sifatli mahsulotlardan tayyorlangan
+          <p className="mt-4 text-lg text-[#666666] font-medium">
+            Tanlang va zavqlaning — yangi taomlar sizni kutmoqda 🍔
           </p>
         </div>
 

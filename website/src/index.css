@@ -7,39 +7,35 @@
 
 @layer base {
     :root {
-        /* Cream white background */
-        --background: 40 33% 98%;
-        --foreground: 25 30% 15%;
+        /* Clean white background */
+        --background: 0 0% 100%;
+        --foreground: 0 0% 15%;
 
-        /* Soft beige cards */
-        --card: 35 30% 95%;
-        --card-foreground: 25 30% 15%;
+        /* Soft cards */
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 15%;
 
-        --popover: 40 33% 98%;
-        --popover-foreground: 25 30% 15%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 15%;
 
-        /* Deep coffee brown primary */
-        --primary: 25 45% 25%;
-        --primary-foreground: 40 33% 98%;
+        /* Vibrant Orange Primary (#F89800) */
+        --primary: 37 100% 49%;
+        --primary-foreground: 0 0% 100%;
 
-        /* Light beige secondary */
-        --secondary: 35 25% 90%;
-        --secondary-foreground: 25 30% 15%;
+        /* Soft grey secondary */
+        --secondary: 0 0% 96%;
+        --secondary-foreground: 0 0% 20%;
 
-        /* Muted warm tones */
-        --muted: 35 20% 92%;
-        --muted-foreground: 25 15% 45%;
+        /* Warm accent (Red from image) */
+        --accent: 0 79% 49%;
+        --accent-foreground: 0 0% 100%;
 
-        /* Warm orange accent */
-        --accent: 25 85% 55%;
-        --accent-foreground: 40 33% 98%;
+        --muted: 0 0% 96%;
+        --muted-foreground: 0 0% 45%;
 
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
-
-        --border: 35 20% 85%;
-        --input: 35 20% 88%;
-        --ring: 25 45% 25%;
+        --border: 0 0% 92%;
+        --input: 0 0% 92%;
+        --ring: 37 100% 49%;
 
         --radius: 0.75rem;
 
