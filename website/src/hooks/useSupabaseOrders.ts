@@ -151,7 +151,8 @@ export function useSupabaseOrders() {
                     await notifyTelegramBot({
                         order_id: orderId,
                         telegram_user_id: telegramUserId,
-                        status: botStatus
+                        status: botStatus,
+                        product_name: updatedOrder.productName
                     });
                 }
             }
@@ -183,7 +184,8 @@ export function useSupabaseOrders() {
                 await notifyTelegramBot({
                     order_id: data.id,
                     telegram_user_id: data.telegram_user_id,
-                    status: "confirmed"
+                    status: "confirmed",
+                    product_name: data.product_name
                 });
             }
 

@@ -8,6 +8,7 @@ from typing import Optional
 from datetime import datetime
 from aiogram import Bot
 from services.notify_user import notify_user_order_status
+from utils.id_formatter import format_order_id
 from bot import API_SECRET_KEY
 from utils.logger import logger
 
@@ -36,6 +37,7 @@ class OrderUpdate(BaseModel):
         default_factory=lambda: datetime.utcnow().isoformat(),
         description="Timestamp of the update"
     )
+    product_name: Optional[str] = Field(None, description="Name of the product")
 
 
 @app.post("/api/order-update")
@@ -78,7 +80,8 @@ async def order_update_webhook(
         bot=bot,
         telegram_user_id=order_update.telegram_user_id,
         order_id=order_update.order_id,
-        status=order_update.status
+        status=order_update.status,
+        product_name=order_update.product_name
     )
     
     if not result["success"]:

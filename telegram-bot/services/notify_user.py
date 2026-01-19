@@ -4,29 +4,39 @@ Service for sending notifications to users.
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from utils.logger import logger
+from utils.id_formatter import format_order_id
 
 
-# Message templates in Uzbek
+# Message templates in Uzbek with rich formatting
 MESSAGE_TEMPLATES = {
     "confirmed": (
-        "✅ <b>Buyurtmangiz qabul qilindi!</b>\n\n"
-        "Buyurtma raqami: #{order_id}\n"
-        "Tez orada buyurtmangizni tayyorlaymiz."
+        "✨ <b>Yangi buyurtma qabul qilindi!</b>\n\n"
+        "🆔 <b>Buyurtma:</b> <code>{order_id}</code>\n"
+        "🍔 <b>Mahsulot:</b> {product_name}\n"
+        "⏳ <b>Holat:</b> Tasdiqlandi\n\n"
+        "<i>Tez orada taomingizni tayyorlashni boshlaymiz!</i>"
     ),
     "ready": (
         "🍳 <b>Buyurtmangiz tayyor bo'ldi!</b>\n\n"
-        "Buyurtma raqami: #{order_id}\n"
-        "Dastavkachi olib ketmoqda."
+        "🆔 <b>Buyurtma:</b> <code>{order_id}</code>\n"
+        "🍔 <b>Mahsulot:</b> {product_name}\n"
+        "🏃‍♂️ <b>Holat:</b> Dastavkaga berildi\n\n"
+        "<i>Dastavkachi hozir yo'lga chiqadi.</i>"
     ),
     "delivering": (
-        "🚚 <b>Buyurtmangiz yetkazilmoqda!</b>\n\n"
-        "Buyurtma raqami: #{order_id}\n"
-        "Iltimos, kuting."
+        "🚚 <b>Buyurtmangiz yo'lda!</b>\n\n"
+        "🆔 <b>Buyurtma:</b> <code>{order_id}</code>\n"
+        "🍔 <b>Mahsulot:</b> {product_name}\n"
+        "📍 <b>Holat:</b> Yetkazilmoqda\n\n"
+        "<i>Iltimos, kuting, dastavkachi yaqin orada yetib boradi.</i>"
     ),
     "delivered": (
-        "✅ <b>Buyurtmangiz yetkazib berildi!</b>\n\n"
-        "Buyurtma raqami: #{order_id}\n"
-        "Yoqimli ishtaha! 🍽️"
+        "✅ <b>Tabriklaymiz! Buyurtma yetkazildi!</b>\n\n"
+        "🆔 <b>Buyurtma:</b> <code>{order_id}</code>\n"
+        "🍔 <b>Mahsulot:</b> {product_name}\n"
+        "🏁 <b>Holat:</b> Yakunlandi\n\n"
+        "<b>Yoqimli ishtaha! 🍽️</b>\n"
+        "<i>Bizni tanlaganingiz uchun rahmat!</i>"
     )
 }
 
@@ -35,7 +45,8 @@ async def notify_user_order_status(
     bot: Bot,
     telegram_user_id: int,
     order_id: str,
-    status: str
+    status: str,
+    product_name: str = "Savatcha"
 ) -> dict:
     """
     Send order status notification to the user.
@@ -56,8 +67,14 @@ async def notify_user_order_status(
             "message": f"Invalid status: {status}"
         }
     
+    # Format order ID for display
+    display_id = format_order_id(order_id)
+    
     # Get message template
-    message_text = MESSAGE_TEMPLATES[status].format(order_id=order_id)
+    message_text = MESSAGE_TEMPLATES[status].format(
+        order_id=display_id,
+        product_name=product_name or "Taomlar"
+    )
     
     try:
         await bot.send_message(
