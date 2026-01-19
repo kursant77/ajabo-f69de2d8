@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
-from supabase import create_client, Client
+from postgrest import AsyncPostgrestClient
 from utils.logger import logger
 
 # Load environment variables
@@ -18,20 +18,30 @@ if not BOT_TOKEN:
     logger.error("BOT_TOKEN not found in environment variables!")
     raise ValueError("BOT_TOKEN is required")
 
-SUPABASE_URL = os.getenv("VITE_SUPABASE_URL") # Use existing key names or new ones
-SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("VITE_SUPABASE_ANON_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    logger.error("Supabase URL or Key not found in environment variables!")
-    # Fallback to BACKEND_API_URL if it's actually the supabase URL (which it often is in these cases)
-    SUPABASE_URL = os.getenv("BACKEND_API_URL")
-    SUPABASE_KEY = os.getenv("API_SECRET_KEY")
+    # Final fallback for backward compatibility
+    if not SUPABASE_URL: SUPABASE_URL = os.getenv("BACKEND_API_URL")
+    if not SUPABASE_KEY: SUPABASE_KEY = os.getenv("API_SECRET_KEY")
 
-if not SUPABASE_URL:
-    raise ValueError("Supabase configuration is required")
+if not SUPABASE_URL or not SUPABASE_URL.startswith("http"):
+    logger.error(f"Invalid Supabase URL: {SUPABASE_URL}")
+    raise ValueError("Valid Supabase URL is required")
 
-# Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Initialize PostgREST client as a replacement for Supabase client
+logger.info(f"Initializing AsyncPostgrestClient with URL: {SUPABASE_URL}")
+supabase = AsyncPostgrestClient(
+    f"{SUPABASE_URL}/rest/v1",
+    headers={
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    }
+)
+# Add compatibility alias for supabase.table() used in handlers
+supabase.table = supabase.from_
+logger.info("Supabase client initialized")
 
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:3000")
 API_SECRET_KEY = os.getenv("API_SECRET_KEY")

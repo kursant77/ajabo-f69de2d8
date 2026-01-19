@@ -7,8 +7,9 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from bot import supabase, logger
+from bot import supabase, logger, WEBSITE_URL
 from keyboards.reply import get_main_menu_keyboard, get_contact_keyboard
+import urllib.parse
 
 router = Router()
 
@@ -27,16 +28,31 @@ async def cmd_start(message: Message, state: FSMContext):
     
     # Check if user exists in Supabase
     try:
-        response = supabase.table("profiles").select("*").eq("telegram_id", telegram_id).execute()
+        logger.info(f"Checking profile for telegram_id: {telegram_id}")
+        response = await supabase.table("profiles").select("*").eq("telegram_id", telegram_id).execute()
+        logger.info(f"Supabase response received: {response}")
         
         if response.data:
             # User exists, show main menu
             profile = response.data[0]
+            
+            # Generate Web App URL with user data for auto-filling
+            params = {
+                "telegram_user_id": telegram_id,
+                "full_name": profile.get("full_name", ""),
+                "phone": profile.get("phone", "")
+            }
+            query_string = urllib.parse.urlencode(params)
+            web_app_url = f"{WEBSITE_URL}?{query_string}"
+            
             welcome_text = (
                 f"👋 <b>Assalomu alaykum, {profile.get('full_name')}!</b>\n\n"
                 "Buyurtma berish uchun quyidagi tugmani bosing:"
             )
-            await message.answer(welcome_text, reply_markup=get_main_menu_keyboard())
+            await message.answer(
+                welcome_text, 
+                reply_markup=get_main_menu_keyboard(web_app_url=web_app_url)
+            )
             await state.clear()
         else:
             # New user, start registration
@@ -89,11 +105,22 @@ async def handle_name(message: Message, state: FSMContext):
             "username": message.from_user.username
         }
         
-        supabase.table("profiles").insert(profile_data).execute()
+        logger.info(f"Inserting profile for user {telegram_id}")
+        await supabase.table("profiles").insert(profile_data).execute()
+        logger.info(f"Profile inserted successfully for {telegram_id}")
+        
+        # Generate Web App URL for the new user
+        params = {
+            "telegram_user_id": telegram_id,
+            "full_name": full_name,
+            "phone": phone
+        }
+        query_string = urllib.parse.urlencode(params)
+        web_app_url = f"{WEBSITE_URL}?{query_string}"
         
         await message.answer(
             f"Tabriklaymiz, {full_name}! Ro'yxatdan muvaffaqiyatli o'tdingiz. ✅",
-            reply_markup=get_main_menu_keyboard()
+            reply_markup=get_main_menu_keyboard(web_app_url=web_app_url)
         )
         await state.clear()
         
