@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { type Order } from "@/data/deliveryData";
 import { toast } from "sonner";
+import { notifyTelegramBot } from "@/lib/telegram";
 
 // Define a type that matches the Supabase DB structure (snake_case)
 type DBOrder = {
@@ -16,6 +17,7 @@ type DBOrder = {
     created_at: string;
     total_price: number | null;
     delivery_person: string | null;
+    telegram_user_id: number | null;
 };
 
 export function useSupabaseOrders() {
@@ -35,6 +37,7 @@ export function useSupabaseOrders() {
         rawCreatedAt: new Date(row.created_at),
         totalPrice: row.total_price || 0,
         deliveryPerson: row.delivery_person || undefined,
+        telegramUserId: row.telegram_user_id || null,
     });
 
     // Helper to map App updates to DB structure
@@ -42,6 +45,7 @@ export function useSupabaseOrders() {
         const dbUpdates: Partial<DBOrder> = {};
         if (updates.status) dbUpdates.status = updates.status;
         if (updates.deliveryPerson) dbUpdates.delivery_person = updates.deliveryPerson;
+        if (updates.telegramUserId) dbUpdates.telegram_user_id = updates.telegramUserId;
         // Add other fields as needed
         return dbUpdates;
     };
@@ -115,6 +119,21 @@ export function useSupabaseOrders() {
                 .eq("id", orderId);
 
             if (error) throw error;
+
+            // Notify Telegram bot if status changed and user has telegram ID
+            const updatedOrder = orders.find(o => o.id === orderId);
+            if (updatedOrder && updatedOrder.telegramUserId && updates.status) {
+                // Map status to telegram bot expected status
+                let botStatus: any = updates.status;
+                if (updates.status === "on_way") botStatus = "delivering";
+                if (updates.status === "pending") botStatus = "confirmed";
+
+                await notifyTelegramBot({
+                    order_id: orderId,
+                    telegram_user_id: updatedOrder.telegramUserId,
+                    status: botStatus
+                });
+            }
         } catch (error) {
             console.error("Error updating order:", error);
             toast.error("Buyurtmani yangilashda xatolik");
@@ -131,11 +150,21 @@ export function useSupabaseOrders() {
                 status: order.status,
                 address: order.address,
                 total_price: order.totalPrice,
+                telegram_user_id: (order as any).telegramUserId || null,
                 // created_at defaults to now()
             };
 
-            const { error } = await supabase.from("orders").insert(dbOrder);
+            const { data, error } = await supabase.from("orders").insert(dbOrder).select().single();
             if (error) throw error;
+
+            // Notify Telegram bot for new order
+            if (data && data.telegram_user_id) {
+                await notifyTelegramBot({
+                    order_id: data.id,
+                    telegram_user_id: data.telegram_user_id,
+                    status: "confirmed"
+                });
+            }
         } catch (error) {
             console.error("Error adding order:", error);
             toast.error("Buyurtma qo'shishda xatolik");

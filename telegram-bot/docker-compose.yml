@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: food_delivery_bot
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${WEBHOOK_PORT:-8080}:8080"
+    volumes:
+      - ./logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "3"

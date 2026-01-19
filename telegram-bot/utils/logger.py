@@ -31,6 +31,20 @@ def setup_logger(name: str = "telegram_bot") -> logging.Logger:
     
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
+
+    # Create file handler for production
+    try:
+        import os
+        log_dir = "logs"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+            
+        file_handler = logging.FileHandler(f"{log_dir}/bot.log", encoding='utf-8')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    except Exception as e:
+        print(f"Could not setup file logging: {e}")
     
     return logger
 

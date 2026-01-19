@@ -1,0 +1,19 @@
+[Unit]
+Description=Telegram Bot for Food Delivery
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/path/to/ajabo-project/telegram-bot
+EnvironmentFile=/path/to/ajabo-project/telegram-bot/.env
+ExecStart=/path/to/ajabo-project/telegram-bot/venv/bin/python main.py
+Restart=always
+RestartSec=5
+
+# Logging to syslog
+StandardOutput=append:/var/log/telegram-bot.log
+StandardError=append:/var/log/telegram-bot.log
+
+[Install]
+WantedBy=multi-user.target

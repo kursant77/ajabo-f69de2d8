@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Truck, Shield } from "lucide-react";
 import Header from "@/components/Header";
@@ -16,6 +16,19 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("kofe");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [telegramUserId, setTelegramUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const userId = searchParams.get("telegram_user_id");
+    if (userId) {
+      const parsedId = parseInt(userId, 10);
+      if (!isNaN(parsedId)) {
+        setTelegramUserId(parsedId);
+        console.log("Found Telegram User ID:", parsedId);
+      }
+    }
+  }, [searchParams]);
 
   const handleOrder = (item: MenuItem) => {
     setSelectedItem(item);
@@ -47,11 +60,12 @@ const Index = () => {
       quantity: orderData.quantity,
       customerName: orderData.fullName,
       phoneNumber: orderData.phoneNumber,
-      address: orderData.comment || "Manzil ko'rsatilmagan", // Using comment as address or fallback
+      address: orderData.address || "Manzil ko'rsatilmagan", // Using address from modal
       status: "pending",
       createdAt: new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
       totalPrice: orderData.totalPrice,
-    });
+      telegramUserId: telegramUserId,
+    } as any);
 
     // Show success toast
     toast.success("Buyurtmangiz qabul qilindi!", {
