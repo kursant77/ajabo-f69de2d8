@@ -38,7 +38,7 @@ const Footer = () => {
             <p className="mb-4 text-sm text-primary-foreground/70">
               Har kuni: 09:00 - 22:00
             </p>
-            
+
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-accent" />
               <a
