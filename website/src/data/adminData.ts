@@ -11,6 +11,7 @@ export const ADMIN_CREDENTIALS = {
 export interface AdminOrder extends Order {
   totalPrice: number;
   deliveryPerson?: string;
+  paymentMethod?: "click" | "payme" | "paynet" | "uzum" | "cash";
 }
 
 // Mock orders with price for admin panel

@@ -90,10 +90,10 @@ const AdminOrderModal = ({ isOpen, onClose }: AdminOrderModalProps) => {
         prev.map((item) =>
           item.productId === selectedProduct.id
             ? {
-                ...item,
-                quantity: item.quantity + productQuantity,
-                totalPrice: (item.quantity + productQuantity) * item.price,
-              }
+              ...item,
+              quantity: item.quantity + productQuantity,
+              totalPrice: (item.quantity + productQuantity) * item.price,
+            }
             : item
         )
       );
@@ -158,12 +158,14 @@ const AdminOrderModal = ({ isOpen, onClose }: AdminOrderModalProps) => {
           customerName: "Admin buyurtmasi",
           phoneNumber: "",
           address: "Manzil ko'rsatilmagan",
-          status: "pending" as any,
+          status: "pending",
           createdAt: new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
+          rawCreatedAt: new Date(),
           totalPrice: item.totalPrice,
           telegramUserId: null,
-          orderType: "takeaway" as any,
-        } as any)
+          orderType: "takeaway",
+          paymentMethod: "cash",
+        })
       );
 
       await Promise.all(orderPromises);
@@ -357,11 +359,10 @@ const AdminOrderModal = ({ isOpen, onClose }: AdminOrderModalProps) => {
                       {filteredProducts.map((product) => (
                         <div
                           key={product.id}
-                          className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                            selectedProduct?.id === product.id
+                          className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${selectedProduct?.id === product.id
                               ? "border-primary bg-primary/5"
                               : "border-gray-200 hover:border-gray-300"
-                          }`}
+                            }`}
                           onClick={() => handleProductSelect(product)}
                         >
                           <div className="flex gap-4">

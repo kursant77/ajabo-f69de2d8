@@ -1,6 +1,9 @@
 import { Coffee, MapPin, Phone, Clock, Instagram, Send } from "lucide-react";
+import { useSupabaseSettings } from "@/hooks/useSupabaseSettings";
 
 const Footer = () => {
+  const { settings } = useSupabaseSettings();
+
   return (
     <footer className="border-t border-border bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-12 md:py-16">
@@ -9,10 +12,10 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <div className="mb-4 flex items-center gap-2">
               <Coffee className="h-6 w-6" />
-              <span className="font-display text-2xl font-bold">Ajabo</span>
+              <span className="font-display text-2xl font-bold">{settings.cafe_name}</span>
             </div>
             <p className="text-sm text-primary-foreground/70">
-              Eng yaxshi qahva va shirinliklar uchun joy. Sizni kutib qolamiz!
+              {settings.description}
             </p>
           </div>
 
@@ -23,9 +26,7 @@ const Footer = () => {
               Manzil
             </h3>
             <p className="text-sm text-primary-foreground/70">
-              Xorazm viloyati, Shovot tumani,
-              <br />
-              Kinoteatr binosi
+              {settings.address}
             </p>
           </div>
 
@@ -36,16 +37,16 @@ const Footer = () => {
               Ish vaqti
             </h3>
             <p className="mb-4 text-sm text-primary-foreground/70">
-              Har kuni: 09:00 - 23:00
+              Har kuni: {settings.open_time} - {settings.close_time}
             </p>
 
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-[#F89800]" />
               <a
-                href="tel:+998901234567"
+                href={`tel:${settings.phone.replace(/\s/g, '')}`}
                 className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
               >
-                +998 90 600 00 00
+                {settings.phone}
               </a>
             </div>
           </div>
@@ -79,7 +80,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-10 border-t border-white/10 pt-6 text-center">
           <p className="text-sm text-white/50">
-            © 2024 Ajabo Cafe. Barcha huquqlar himoyalangan.
+            © {new Date().getFullYear()} {settings.cafe_name}. Barcha huquqlar himoyalangan.
           </p>
           <p className="mt-2 text-xs text-white/30 font-bold uppercase tracking-widest">
             Developed by Tricorp Group

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ShoppingBag, DollarSign, TrendingUp, Clock } from "lucide-react";
+import { ShoppingBag, DollarSign, TrendingUp, Clock, CreditCard } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   };
 
   // Memoize all calculations - only recalculate when orders change
-  const { todayStats, graphData, topProductsList } = useMemo(() => {
+  const { todayStats, graphData, topProductsList, paymentStats } = useMemo(() => {
     // Exclude unpaid orders from all statistics
     const paidOrders = orders.filter(o => o.status !== "pending_payment");
 
@@ -75,6 +75,51 @@ const AdminDashboard = () => {
       .sort((a, b) => b.sold - a.sold)
       .slice(0, 5);
 
+    // Payment Statistics
+    const methodCounts: Record<string, { count: number; revenue: number }> = {};
+    let onlineCount = 0;
+    let cashCount = 0;
+    let pendingPaymentCount = 0;
+
+    orders.forEach((o) => {
+      if (o.status === "pending_payment") {
+        pendingPaymentCount++;
+        return;
+      }
+      const method = o.paymentMethod || "cash";
+      if (!methodCounts[method]) methodCounts[method] = { count: 0, revenue: 0 };
+      methodCounts[method].count++;
+      methodCounts[method].revenue += o.totalPrice || 0;
+      if (method === "cash") cashCount++; else onlineCount++;
+    });
+
+    const totalPaidOrders = onlineCount + cashCount;
+    const onlinePercent = totalPaidOrders > 0 ? Math.round((onlineCount / totalPaidOrders) * 100) : 0;
+
+    // Payment conversion: pending_payment that became paid
+    const allPendingPayment = orders.filter((o) => o.status === "pending_payment").length;
+    const totalOnlineAttempts = onlineCount + allPendingPayment;
+    const conversionRate = totalOnlineAttempts > 0 ? Math.round((onlineCount / totalOnlineAttempts) * 100) : 0;
+
+    const methodLabels: Record<string, { label: string; color: string }> = {
+      cash: { label: "Naqd pul", color: "bg-emerald-500" },
+      click: { label: "Click", color: "bg-sky-500" },
+      payme: { label: "Payme", color: "bg-teal-500" },
+      uzum: { label: "Uzum Bank", color: "bg-violet-500" },
+      paynet: { label: "Paynet", color: "bg-indigo-500" },
+    };
+
+    const methodBreakdown = Object.entries(methodCounts)
+      .map(([method, stats]) => ({
+        method,
+        label: methodLabels[method]?.label || method,
+        color: methodLabels[method]?.color || "bg-gray-400",
+        count: stats.count,
+        revenue: stats.revenue,
+        percent: totalPaidOrders > 0 ? Math.round((stats.count / totalPaidOrders) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
     return {
       todayStats: {
         ordersCount: todayOrders.length,
@@ -84,6 +129,14 @@ const AdminDashboard = () => {
       },
       graphData: weeklyData,
       topProductsList: topProducts,
+      paymentStats: {
+        onlinePercent,
+        cashCount,
+        onlineCount,
+        pendingPaymentCount,
+        conversionRate,
+        methodBreakdown,
+      },
     };
   }, [orders]);
 
@@ -133,6 +186,75 @@ const AdminDashboard = () => {
         />
       </div>
 
+
+      {/* Payment Statistics */}
+      <div className="bg-card rounded-2xl border border-border/50 p-6 shadow-sm mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-foreground">
+            💳 To'lov statistikasi
+          </h3>
+          <div className="flex items-center gap-4 text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              Konversiya: {paymentStats.conversionRate}%
+            </span>
+            {paymentStats.pendingPaymentCount > 0 && (
+              <span className="flex items-center gap-1.5 text-amber-600">
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                {paymentStats.pendingPaymentCount} to'lov kutilmoqda
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Online vs Cash ratio */}
+        <div className="mb-6">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-muted-foreground">Online: {paymentStats.onlineCount}</span>
+            <span className="text-muted-foreground">Naqd: {paymentStats.cashCount}</span>
+          </div>
+          <div className="h-3 rounded-full bg-secondary overflow-hidden flex">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500 rounded-l-full"
+              style={{ width: `${paymentStats.onlinePercent}%` }}
+            />
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500 rounded-r-full"
+              style={{ width: `${100 - paymentStats.onlinePercent}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 text-center">
+            Online {paymentStats.onlinePercent}% • Naqd {100 - paymentStats.onlinePercent}%
+          </p>
+        </div>
+
+        {/* Per-method breakdown */}
+        <div className="space-y-3">
+          {paymentStats.methodBreakdown.map((m) => (
+            <div key={m.method} className="flex items-center gap-3">
+              <div className={`h-3 w-3 rounded-full ${m.color} shrink-0`} />
+              <span className="text-sm font-medium text-foreground w-24">{m.label}</span>
+              <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${m.color} transition-all duration-500`}
+                  style={{ width: `${m.percent}%` }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground w-16 text-right">
+                {m.count} ({m.percent}%)
+              </span>
+              <span className="text-xs font-medium text-foreground w-28 text-right">
+                {formatPrice(m.revenue)} so'm
+              </span>
+            </div>
+          ))}
+          {paymentStats.methodBreakdown.length === 0 && (
+            <p className="text-center text-muted-foreground py-4">
+              To'lov ma'lumotlari yo'q
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Top Products */}
       <div className="bg-card rounded-2xl border border-border/50 p-6 shadow-sm">

@@ -11,6 +11,8 @@ export interface Order {
   totalPrice?: number;
   orderType: "delivery" | "takeaway" | "preorder";
   telegramUserId?: number | null;
+  paymentMethod?: "click" | "payme" | "paynet" | "uzum" | "cash";
+  deliveryPerson?: string;
 }
 
 export const mockOrders: Order[] = [

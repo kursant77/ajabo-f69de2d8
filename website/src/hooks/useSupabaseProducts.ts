@@ -7,12 +7,30 @@ const PRODUCT_IMAGES_BUCKET = "product-images";
 
 /** Upload a file to product-images bucket and return public URL. */
 export async function uploadProductImage(file: File): Promise<string> {
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from(PRODUCT_IMAGES_BUCKET).upload(path, file, { upsert: true });
-    if (error) throw error;
-    const { data } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path);
-    return data.publicUrl;
+    try {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error } = await supabase.storage
+            .from(PRODUCT_IMAGES_BUCKET)
+            .upload(path, file, { upsert: true });
+
+        if (error) {
+            console.error("Storage upload error:", error);
+            if (error.message.includes("Bucket not found")) {
+                toast.error("Xatolik: 'product-images' bucketi topilmadi. Supabase dashboardda yaratilganiga ishonch hosil qiling.");
+            } else {
+                toast.error(`Rasm yuklashda xatolik: ${error.message}`);
+            }
+            throw error;
+        }
+
+        const { data } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path);
+        return data.publicUrl;
+    } catch (error: any) {
+        console.error("uploadProductImage unexpected error:", error);
+        throw error;
+    }
 }
 
 export interface Product {

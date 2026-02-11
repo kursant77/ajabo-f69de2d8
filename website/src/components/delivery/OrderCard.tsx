@@ -1,4 +1,4 @@
-import { Phone, MapPin, Clock, Check, Truck, ExternalLink } from "lucide-react";
+import { Phone, MapPin, Clock, Check, Truck, ExternalLink, Banknote, CreditCard } from "lucide-react";
 import type { Order } from "@/data/deliveryData";
 import { cn } from "@/lib/utils";
 
@@ -21,18 +21,22 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("uz-UZ").format(price) + " so'm";
+  };
+
   const getStatusBadge = () => {
     switch (order.status) {
       case "delivered":
-        return <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">Yetkazildi</span>;
+        return <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">✅ Yetkazildi</span>;
       case "on_way":
-        return <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">Yo'lda</span>;
+        return <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">🚚 Yo'lda</span>;
       case "ready":
-        return <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">Tayyor</span>;
+        return <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">🥡 Tayyor</span>;
       case "pending_payment":
-        return <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 italic">To'lov kutilmoqda</span>;
+        return <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 italic">💳 To'lov kutilmoqda</span>;
       default:
-        return <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">Tayyorlanmoqda</span>;
+        return <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">⏳ Tayyorlanmoqda</span>;
     }
   };
 
@@ -52,7 +56,7 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
         return (
           <button
             onClick={() => onStatusUpdate(order.id, "on_way")}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-[0.98]"
           >
             <Truck className="h-4 w-4" />
             Jarayonda
@@ -62,7 +66,7 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
         return (
           <button
             onClick={() => onStatusUpdate(order.id, "delivered")}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-[0.98]"
           >
             <Check className="h-4 w-4" />
             Yetkazib berildi
@@ -100,9 +104,16 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
           <h3 className="font-semibold text-card-foreground">
             {order.productName}
           </h3>
-          <p className="text-sm text-muted-foreground">
-            Miqdor: <span className="font-medium">{order.quantity} dona</span>
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-muted-foreground">
+              Miqdor: <span className="font-medium">{order.quantity} dona</span>
+            </p>
+            {order.totalPrice && order.totalPrice > 0 && (
+              <span className="text-sm font-semibold text-primary">
+                • {formatPrice(order.totalPrice)}
+              </span>
+            )}
+          </div>
         </div>
         {getStatusBadge()}
       </div>
@@ -116,7 +127,7 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
           <Phone className="h-4 w-4" />
           <a
             href={`tel:${order.phoneNumber.replace(/\s/g, "")}`}
-            className="hover:text-primary"
+            className="hover:text-primary transition-colors"
           >
             {order.phoneNumber}
           </a>
@@ -130,7 +141,7 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
             href={getGoogleMapsUrl(order.address)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-7 items-center gap-1 rounded bg-secondary px-2 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10"
+            className="flex h-7 items-center gap-1 rounded bg-secondary px-2 text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10 transition-colors"
           >
             <ExternalLink className="h-3 w-3" />
             Xarita
@@ -140,6 +151,26 @@ const OrderCard = ({ order, onStatusUpdate }: OrderCardProps) => {
           <Clock className="h-4 w-4" />
           <span>Buyurtma vaqti: {order.createdAt}</span>
         </div>
+        {/* Payment method indicator */}
+        {order.paymentMethod && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            {order.paymentMethod === "cash" ? (
+              <Banknote className="h-4 w-4" />
+            ) : (
+              <CreditCard className="h-4 w-4" />
+            )}
+            <span>
+              To'lov: {
+                order.paymentMethod === "cash" ? "Naqd" :
+                  order.paymentMethod === "click" ? "Click" :
+                    order.paymentMethod === "payme" ? "Payme" :
+                      order.paymentMethod === "uzum" ? "Uzum Bank" :
+                        order.paymentMethod === "paynet" ? "Paynet" :
+                          order.paymentMethod
+              }
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Action Button */}

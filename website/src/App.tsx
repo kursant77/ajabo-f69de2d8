@@ -22,6 +22,10 @@ import AdminReports from "./pages/admin/AdminReports";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminExpenses from "./pages/admin/AdminExpenses";
 import AdminLayout from "@/components/admin/AdminLayout";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailed from "./pages/PaymentFailed";
+import MyOrders from "./pages/MyOrders";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +37,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/checkout/:productId" element={<Checkout />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/failed" element={<PaymentFailed />} />
+          <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/delivery" element={<DeliveryLoginPage />} />
           <Route path="/delivery/dashboard" element={<DeliveryDashboardPage />} />
           {/* Admin Routes */}

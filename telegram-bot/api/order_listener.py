@@ -1,15 +1,16 @@
 """
 FastAPI webhook server for receiving order updates from backend.
 """
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
+import hashlib
 from aiogram import Bot
 from services.notify_user import notify_user_order_status
 from utils.id_formatter import format_order_id
-from bot import API_SECRET_KEY
+from bot import API_SECRET_KEY, supabase
 from utils.logger import logger
 
 # Create FastAPI app
@@ -105,6 +106,86 @@ async def order_update_webhook(
         "order_id": order_update.order_id,
         "telegram_user_id": order_update.telegram_user_id
     }
+
+
+async def update_order_status_db(order_id: str, status: str):
+    """Helper to update order status in Supabase."""
+    try:
+        # First check if order is in pending_payment status (idempotency)
+        res = await supabase.table("orders").select("status").eq("id", order_id).single()
+        if res and res.get("status") == "pending_payment":
+            await supabase.table("orders").update({"status": status}).eq("id", order_id)
+            logger.info(f"✅ Order {order_id} status updated to {status} via payment callback")
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"❌ Failed to update order status {order_id}: {e}")
+        return False
+
+
+@app.post("/api/payment/click/callback")
+async def click_callback(
+    click_trans_id: int = Form(...),
+    service_id: int = Form(...),
+    click_paydoc_id: int = Form(...),
+    merchant_trans_id: str = Form(...),
+    amount: float = Form(...),
+    action: int = Form(...),
+    error: int = Form(...),
+    error_note: str = Form(...),
+    sign_time: str = Form(...),
+    sign_string: str = Form(...)
+):
+    """
+    Click payment callback handler.
+    Documentation: https://docs.click.uz/click-api-request/
+    """
+    logger.info(f"💰 Click callback received for order {merchant_trans_id}, action={action}")
+    
+    # 0 - Prepare, 1 - Complete
+    if error < 0:
+        return {"error": error, "error_note": error_note}
+
+    if action == 1:
+        if error == 0:
+            # Payment successful
+            success = await update_order_status_db(merchant_trans_id, "pending")
+            if success:
+                return {"error": 0, "error_note": "Success"}
+            else:
+                return {"error": -1, "error_note": "Order already processed or not found"}
+    
+    # Simple reply for Prepare (action=0)
+    return {"error": 0, "error_note": "Success"}
+
+
+@app.post("/api/payment/payme/callback")
+async def payme_callback(request: Request):
+    """
+    Payme payment callback handler (JSON-RPC 2.0).
+    Documentation: https://developer.help.paycom.uz/metody-merchant-api
+    """
+    data = await request.json()
+    method = data.get("method")
+    params = data.get("params", {})
+    
+    logger.info(f"💳 Payme callback received: method={method}")
+    
+    # Simplified logic for demonstration
+    # In production, you must verify CheckPerformTransaction, PerformTransaction, etc.
+    if method == "PerformTransaction":
+        order_id = params.get("account", {}).get("order_id")
+        if order_id:
+            await update_order_status_db(order_id, "pending")
+            return {
+                "result": {
+                    "transaction": params.get("id"),
+                    "perform_time": int(datetime.utcnow().timestamp() * 1000),
+                    "state": 2
+                }
+            }
+            
+    return {"result": {"success": True}}
 
 
 @app.post("/api/send-message")
