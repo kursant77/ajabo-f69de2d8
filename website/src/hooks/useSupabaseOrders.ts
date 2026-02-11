@@ -19,7 +19,63 @@ type DBOrder = {
     delivery_person: string | null;
     telegram_user_id: number | null;
     order_type?: string;
+    warehouse_deducted?: boolean;
 };
+
+/** Deduct order quantity from warehouse: by product_ingredients if product found; else fallback 1:1 by product_name. */
+async function deductWarehouseForOrder(orderId: string, productName: string, quantity: number): Promise<void> {
+    const name = (productName || "").trim();
+    if (!name || quantity <= 0) return;
+    try {
+        const { data: product, error: productErr } = await supabase
+            .from("products")
+            .select("id")
+            .ilike("name", name)
+            .limit(1)
+            .maybeSingle();
+        if (!productErr && product?.id) {
+            const { data: ingredients, error: ingErr } = await supabase
+                .from("product_ingredients")
+                .select("warehouse_product_id, quantity")
+                .eq("product_id", product.id);
+            if (!ingErr && ingredients && ingredients.length > 0) {
+                for (const ing of ingredients) {
+                    const { data: wp } = await supabase
+                        .from("warehouse_products")
+                        .select("id, quantity")
+                        .eq("id", ing.warehouse_product_id)
+                        .single();
+                    if (wp) {
+                        const deduct = Number(ing.quantity ?? 0) * quantity;
+                        const newQty = Math.max(0, (wp.quantity ?? 0) - deduct);
+                        await supabase
+                            .from("warehouse_products")
+                            .update({ quantity: newQty, updated_at: new Date().toISOString() })
+                            .eq("id", ing.warehouse_product_id);
+                    }
+                }
+                await supabase.from("orders").update({ warehouse_deducted: true }).eq("id", orderId);
+                return;
+            }
+        }
+        // Fallback: 1:1 by product_name
+        const { data: wp, error: fetchErr } = await supabase
+            .from("warehouse_products")
+            .select("id, quantity")
+            .ilike("name", name)
+            .limit(1)
+            .maybeSingle();
+        if (fetchErr || !wp) return;
+        const newQty = Math.max(0, (wp.quantity ?? 0) - quantity);
+        await supabase
+            .from("warehouse_products")
+            .update({ quantity: newQty, updated_at: new Date().toISOString() })
+            .eq("id", wp.id);
+        await supabase.from("orders").update({ warehouse_deducted: true }).eq("id", orderId);
+    } catch {
+        // warehouse_products / product_ingredients / warehouse_deducted may not exist
+    }
+}
 
 export function useSupabaseOrders() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -160,6 +216,11 @@ export function useSupabaseOrders() {
                     });
                 }
             }
+
+            // When status changes from pending_payment to confirmed/etc., deduct from warehouse once
+            if (data && updates.status && updates.status !== "pending_payment" && !data.warehouse_deducted) {
+                await deductWarehouseForOrder(data.id, data.product_name, data.quantity);
+            }
         } catch (error) {
             console.error("Error updating order:", error);
             toast.error("Buyurtmani yangilashda xatolik");
@@ -204,6 +265,11 @@ export function useSupabaseOrders() {
                     product_name: data.product_name,
                     order_type: data.order_type
                 });
+            }
+
+            // Deduct from warehouse when order is not pending_payment (once per order)
+            if (data && data.status !== "pending_payment") {
+                await deductWarehouseForOrder(data.id, data.product_name, data.quantity);
             }
 
             return data?.id;
